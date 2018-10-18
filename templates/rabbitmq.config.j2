@@ -1,7 +1,7 @@
 [
     {rabbit, [
     {% if rabbitmq_enable_ssl %}
-    {ssl_listeners, [{{ rabbitmq_port }}]},
+    {ssl_listeners, [ {{rabbitmq_ports|join(', ')}} ]},
     {ssl_options, [{cacertfile,"{{ rabbitmq_config_path }}/ssl/cacert.pem"},
                    {certfile,"{{ rabbitmq_config_path }}/ssl/cert.pem"},
                    {keyfile,"{{ rabbitmq_config_path }}/ssl/key.pem"},
