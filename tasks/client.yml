@@ -12,6 +12,16 @@
     mode: "0640"
   notify: restart sensu-client service
 
+- name: Deploy client-specific config variables
+  template:
+    dest: "{{ sensu_config_path}}/conf.d/client_variables.json"
+    owner: "{{ sensu_user_name }}"
+    group: "{{ sensu_group_name }}"
+    mode: 0640
+    src: "{{ sensu_client_variable_template }}"
+  when: sensu_custom_client_config is defined
+  notify: restart sensu-client service
+
 - include: "{{ role_path }}/tasks/SmartOS/client.yml"
   when: ansible_distribution == "SmartOS"
   static: false
