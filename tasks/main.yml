@@ -47,3 +47,8 @@
   tags: plugins
   when: sensu_include_plugins
   static: false
+
+- include: "{{ role_path }}/tasks/fanout_checks.yml"
+  tags: plugins
+  when: sensu_include_plugins
+  static: false

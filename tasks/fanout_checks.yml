@@ -1,0 +1,43 @@
+---
+  # Ansible will otherwise keep all checks from the old file
+  - name: Remove old URL SSL checks
+    file:
+      path: "{{ sensu_config_path }}/conf.d/checks_tls.json"
+      state: absent
+
+  - name: Generate SSL checks using Ansible
+    sensu_check:
+      name=tls_{{ item.host }}
+      command="/etc/sensu/plugins/check-ssl-host.rb -c 7 -w 30 -h {{ item.host }}"
+      path="{{ sensu_config_path }}/conf.d/checks_tls.json"
+      handlers=slack
+      interval=600
+      subscribers=external_monitor
+      timeout=30
+      occurrences=1
+      refresh=43200
+      source={{ item.source|default(omit) }}
+    with_items: "{{ sensu_cert_check_hosts | default([]) }}"
+    when: sensu_master
+    tags: sensu_checks
+
+  # Ansible will otherwise keep all checks from the old file
+  - name: Remove old URL response time checks
+    file:
+      path: "{{ sensu_config_path }}/conf.d/checks_url_timing.json"
+      state: absent
+
+  - name: Generate checks for URL response time
+    sensu_check:
+      name: url_timing_{{ item.name }}
+      command: "/etc/sensu/plugins/metrics-curl.rb -u '{{ item.url }}' -s http_timings.{{ item.name }}"
+      path: "{{ sensu_config_path }}/conf.d/checks_url_timing.json"
+      metric: yes
+      interval: 60
+      subscribers: external_monitor
+      handlers: graphite_line_tcp
+      timeout: 30
+      source: "{{ item.source|default(omit) }}"
+    with_items: "{{ sensu_check_urls | default(omit) }}"
+    when: sensu_master
+    tags: sensu_checks
